@@ -62,7 +62,7 @@ initialCovar = diag([q_var_init, p_var_init  v_var_init,bg_var_init, ba_var_init
 
 
 figure(1);
-subplot(1,3,1);
+subplot(1,2,1);
 plot_checherboard(checkerBoardPoints');
 hold on;
 view(-40,10);
