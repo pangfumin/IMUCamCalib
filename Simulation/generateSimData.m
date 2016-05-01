@@ -6,7 +6,7 @@ clear;
 addpath('./plotutils');
 
 %% ===== option == %%
-fileName = 'data_sim_04_noise_circle.mat';
+fileName = 'data_sim_04_circle.mat';
 %trajectory time in seconds
 tf = 2*pi;
 syms tsym;
@@ -14,6 +14,7 @@ syms tsym;
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ; sin(tsym)*0.2 ; -tsym ; -sin(tsym)*0.2];
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ; sin(tsym)*0.2 ; -sin(tsym)*0.1 ;cos(tsym)*0.2 ];
 x_func = [0.3*cos(tsym);  0.3*sin(tsym); 0.1*sin(3*tsym);0;0;0 ];
+% x_func = [0;  0; 0.4*sin(3*tsym);0;0;0 ];
 % x_func = [cos(tsym)-1 ; 0;tsym*0.2  ; 0;0;0];
 %x_func = [tsym*0.2 ; 0;0  ; 0;0;0];
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ;-sin(tsym)*0.2;0 ;0];
@@ -28,12 +29,12 @@ Cam.cx = 320;
 Cam.cy = 240;
 
 % standard deviation
-sigma_im = 11;               % pixel coord sigma , give it a small value ( not 0)
+sigma_im = 1;               % pixel coord sigma , give it a small value ( not 0)
 noise.sigma_im = sigma_im/Cam.fx;
-sigma_gc  = 0.001 ;             % rot vel var  
-sigma_ac  = 0.008 ;              % lin accel var  
-sigma_wgc = 0.0001 ;            % gyro bias change var 
-sigma_wac = 0.0001;           % accel bias change var
+sigma_gc  = 0.00 ;             % rot vel var  
+sigma_ac  = 0.00 ;              % lin accel var  
+sigma_wgc = 0.000 ;            % gyro bias change var 
+sigma_wac = 0.000;           % accel bias change var
 noise.sigma_gc = sigma_gc;
 noise.sigma_ac = sigma_ac;
 noise.sigma_wgc = sigma_wgc;
@@ -97,13 +98,13 @@ a(3,:) = a(3,:) - x_ig(3);
 
 % Noise for a ba g bg
 num = length(t);
-b_a0 = 0.01*a(:,1);
+b_a0 = 0.0*a(:,1);
 b_a = repmat(b_a0,[1,num]);
 n_ba = sigma_wac*randn(3,num);
 b_a = b_a + n_ba;
 n_a = sigma_ac*randn(3,num);
 
-b_g0 = 0.01*w(:,1);
+b_g0 = 0.0*w(:,1);
 b_g = repmat(b_g0,[1,num]);
 n_bg = sigma_wgc*randn(3,num);
 b_g = b_g + n_bg;
