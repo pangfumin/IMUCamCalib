@@ -1,6 +1,4 @@
 function ekfState_up = updateState(ekfState, deltaX)
-
-
     % Initialize updated state with current state
     ekfState_up = ekfState;
 
@@ -10,9 +8,7 @@ function ekfState_up = updateState(ekfState, deltaX)
     deltav_I_G = deltaX(7:9);
     deltabg = deltaX(10:12);
     deltaba = deltaX(13:15);
-    
-   
-    
+  
     % q
     deltaq_I_G = buildUpdateQuat(deltatheta_I_G);
     ekfState_up.q_I_G = quatLeftComp(deltaq_I_G) * ekfState.q_I_G;

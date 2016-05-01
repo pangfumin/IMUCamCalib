@@ -56,11 +56,9 @@ p_var_init = 1e-6 * ones(1,3);         % init pos var
 v_var_init = 1e-6 * ones(1,3);         % init velocity var
 bg_var_init = 1e-6 * ones(1,3);        % init gyro bias var
 ba_var_init = 1e-6 * ones(1,3);        % init accel bias var
-qCI_var_init = 1e-6 * ones(1,3);
-pIC_var_init = 1e-6 * ones(1,3); 
 
 
-initialCovar = diag([q_var_init, p_var_init  v_var_init,bg_var_init, ba_var_init,qCI_var_init,pIC_var_init]);
+initialCovar = diag([q_var_init, p_var_init  v_var_init,bg_var_init, ba_var_init]);
 
 
 figure(1);
@@ -80,8 +78,6 @@ firstEkfState.p_I_G = ground_truth(imageStart,2:4)';
 firstEkfState.v_I_G = ground_truth_vels(imageStart,2:4)';
 firstEkfState.bg = [0;0;0];
 firstEkfState.ba = [0;0;0];
-firstEkfState.q_C_I = [0;0;0;1];
-firstEkfState.p_I_C = [0;0;0];
 
 
 % covariance

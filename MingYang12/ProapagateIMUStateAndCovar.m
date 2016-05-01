@@ -72,6 +72,7 @@ P(7:9,1:3) = Pvq;
 P(7:9,10:12) = Pvbg;
 P(7:9,13:15) = Pvba;
 
+
 Nc = zeros(15);
 Nc(1:3,1:3) = noiseParams.sigma_gc*noiseParams.sigma_gc*eye(3);
 Nc(7:9,7:9) = noiseParams.sigma_ac*noiseParams.sigma_ac*eye(3);

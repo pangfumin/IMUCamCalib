@@ -29,12 +29,12 @@ Cam.cx = 320;
 Cam.cy = 240;
 
 % standard deviation
-sigma_im = 1;               % pixel coord sigma , give it a small value ( not 0)
+sigma_im = 11;               % pixel coord sigma , give it a small value ( not 0)
 noise.sigma_im = sigma_im/Cam.fx;
-sigma_gc  = 0.00 ;             % rot vel var  
-sigma_ac  = 0.00 ;              % lin accel var  
-sigma_wgc = 0.000 ;            % gyro bias change var 
-sigma_wac = 0.000;           % accel bias change var
+sigma_gc  = 0.001 ;             % rot vel var  
+sigma_ac  = 0.008 ;              % lin accel var  
+sigma_wgc = 0.0001 ;            % gyro bias change var 
+sigma_wac = 0.0001;           % accel bias change var
 noise.sigma_gc = sigma_gc;
 noise.sigma_ac = sigma_ac;
 noise.sigma_wgc = sigma_wgc;
