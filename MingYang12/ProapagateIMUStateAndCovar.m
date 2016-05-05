@@ -36,11 +36,15 @@ ekfState_pro.p_I_G = ekfState.p_I_G +ekfState.v_I_G*dt+ R_I_G'*y + 0.5*gG*dt*dt;
 ekfState_pro.bg = ekfState.bg;
 ekfState_pro.ba = ekfState.ba;
 
+ekfState_pro.q_C_I = ekfState.q_C_I;
+ekfState_pro.p_I_C = ekfState.p_I_C;
+
+
 
 %% ============= Propagte error and covar ================== %%
 % according to Shelly's Master Thesis Appendix B
 R_lastT = R_I_G';
-R_T = quatToRotMat(ekfState.q_I_G)';
+R_T = quatToRotMat(ekfState_pro.q_I_G)';
 Rsum = (R_lastT + R_T);
 Pqq = eye(3);
 Ppq = -crossMat(R_lastT*y);
@@ -59,25 +63,38 @@ Ppba = 0.5*dt*Pvba;
 
 P = eye(15);
 P(1:3,1:3) = Pqq;
-P(1:3,10:12) = Pqbg;
-P(1:3,13:15) = Pqba;
+% P(1:3,10:12) = Pqbg;
+% P(1:3,13:15) = Pqba;
 
 P(4:6,1:3) = Ppq;
 P(4:6,4:6) = eye(3);
 P(4:6,7:9) = eye(3)*dt;
-P(4:6,10:12) = Ppbg;
-P(4:6,13:15) = Ppba;
+% P(4:6,10:12) = Ppbg;
+% P(4:6,13:15) = Ppba;
 
 P(7:9,1:3) = Pvq;
-P(7:9,10:12) = Pvbg;
-P(7:9,13:15) = Pvba;
+% P(7:9,10:12) = Pvbg;
+% P(7:9,13:15) = Pvba;
 
 
-Nc = zeros(15);
-Nc(1:3,1:3) = noiseParams.sigma_gc*noiseParams.sigma_gc*eye(3);
-Nc(7:9,7:9) = noiseParams.sigma_ac*noiseParams.sigma_ac*eye(3);
-Nc(10:12,10:12) = noiseParams.sigma_wgc*noiseParams.sigma_wgc*eye(3);
-Nc(13:15,13:15) = noiseParams.sigma_wac*noiseParams.sigma_wac*eye(3);
+
+Zero = zeros(15,6);
+P = [P Zero;
+    Zero' eye(6)];
+
+Gc = zeros(21,12);
+Gc(1:3,1:3) = -eye(3);
+Gc(7:9,4:6) = -R_lastT;
+Gc(10:12,7:9) = eye(3);
+Gc(13:15,10:12) = eye(3);
+
+
+Qc = zeros(12,12);
+Qc(1:3,1:3) = noiseParams.sigma_gc*noiseParams.sigma_gc*eye(3);
+Qc(4:6,4:6) = noiseParams.sigma_ac*noiseParams.sigma_ac*eye(3);
+Qc(7:9,7:9) = noiseParams.sigma_wgc*noiseParams.sigma_wgc*eye(3);
+Qc(10:12,10:12) = noiseParams.sigma_wac*noiseParams.sigma_wac*eye(3);
+Nc = Gc*Qc*Gc';
 Qd = 0.5*dt*P*Nc*P'+Nc;
 
 ekfState_pro.Covar = P*ekfState.Covar*P'+Qd;

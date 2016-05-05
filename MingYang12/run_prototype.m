@@ -10,7 +10,7 @@ close all;
 clear;
 addpath('../Simulation/plotutils');
 addpath('../utils');
-datafile = '../dataset/data_sim_04_noise_circle.mat';
+datafile = '../dataset/data_sim_04_noise_line.mat';
 load(datafile);
 
 checkerBoardPoints = points;
@@ -81,7 +81,7 @@ firstEkfState.v_I_G = ground_truth_vels(imageStart,2:4)';
 firstEkfState.bg = [0;0;0];
 firstEkfState.ba = [0;0;0];
 firstEkfState.q_C_I = [0;0;0;1];
-firstEkfState.p_I_C = [0;0;0];
+firstEkfState.p_I_C = [0.02;0.05;-0.03];
 
 
 % covariance
@@ -93,6 +93,8 @@ purePropagateState = firstEkfState;
 
 pHat = ground_truth(imageStart,2:4)';
 onlyImuPro = ground_truth(imageStart,2:4)';
+p_I_CHat = [firstEkfState.p_I_C];
+
 %% ==========================Loop ==============================%%
 
 
@@ -118,6 +120,7 @@ for state_i = imageStart+1 : imageEnd
 %             % For visualize
 %             
             pHat = [ pHat ekfState.p_I_G];
+            p_I_CHat = [p_I_CHat ekfState.p_I_C];
             onlyImuPro = [onlyImuPro purePropagateState.p_I_G];
   
         end
@@ -139,9 +142,11 @@ for state_i = imageStart+1 : imageEnd
     p_I_G = ekfState.p_I_G;
 
     R_I_G = quatToRotMat(q_I_G);
-    q_C_G = rotMatToQuat(camera.R_C_I*R_I_G);
+    R_C_I = quatToRotMat(ekfState.q_C_I);
+    q_C_G = rotMatToQuat(R_C_I*R_I_G);
     q_C_G = q_C_G/norm(q_C_G);
-    p_C_G = p_I_G + R_I_G'*camera.Ip_C;
+    Ip_C = - R_C_I'*ekfState.p_I_C;
+    p_C_G = p_I_G + R_I_G'*Ip_C;
    
 
     [observedPoints,validIndex] = projectPoints(q_C_G,p_C_G,checkerBoardPoints,PointCloud,Cam,noise.sigma_im);
@@ -168,7 +173,7 @@ for state_i = imageStart+1 : imageEnd
 %     
     ekfState = updateState(ekfState, deltaX); 
      % Covariance correction
-    tempMat = (eye(15) - K*H);
+    tempMat = (eye(21) - K*H);
     P_corrected = tempMat * P * tempMat' + K * R * K';
     ekfState.Covar = P_corrected;
 
@@ -176,18 +181,8 @@ end
 
 
 %% ================ PLOT =============================%%
+plot_result;
 
-p0 = ground_truth(1,2:4);
-figure(2);
-plot3(p0(1),p0(2),p0(3),'*');
-hold on;
-plot3(ground_truth(:,2),ground_truth(:,3),ground_truth(:,4),'r');
-hold on;
-plot3(pHat(1,:),pHat(2,:),pHat(3,:),'g');
-hold on;
-plot3(onlyImuPro(1,:),onlyImuPro(2,:),onlyImuPro(3,:),'b');
-
-legend('Start','Truth','Est.','Pure IMU');
 
 
 
