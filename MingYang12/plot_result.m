@@ -1,4 +1,4 @@
-%plot_result
+%% ============================= plot  trajectory =================== %%
 p0 = ground_truth(1,2:4);
 figure(2);
 plot3(p0(1),p0(2),p0(3),'*');
@@ -11,6 +11,14 @@ plot3(onlyImuPro(1,:),onlyImuPro(2,:),onlyImuPro(3,:),'b');
 
 legend('Start','Truth','Est.','Pure IMU');
 
+%% ============================== plot P_I_C =========================== %%
 figure(3);
 sampleNum = size(p_I_CHat,2);
 plot(1:sampleNum,p_I_CHat(1,:),'r',1:sampleNum,p_I_CHat(2,:),'g',1:sampleNum,p_I_CHat(3,:),'b');
+
+%% ============================== plot q_C_I =========================== %%
+figure(4);
+sampleNum = size(rotHat,2);
+rotHat = rotHat*180/3.14;
+plot(1:sampleNum,rotHat(1,:),'r',1:sampleNum,rotHat(2,:),'g',1:sampleNum,rotHat(3,:),'b');
+

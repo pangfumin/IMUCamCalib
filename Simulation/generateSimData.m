@@ -6,15 +6,15 @@ clear;
 addpath('./plotutils');
 
 %% ===== option == %%
-fileName = 'data_sim_04_circle.mat';
+fileName = 'data_sim_05_line_rot.mat';
 %trajectory time in seconds
 tf = 2*pi;
 syms tsym;
 % x = [ 1 y z roll pitch yaw]
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ; sin(tsym)*0.2 ; -tsym ; -sin(tsym)*0.2];
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ; sin(tsym)*0.2 ; -sin(tsym)*0.1 ;cos(tsym)*0.2 ];
-x_func = [0.3*cos(tsym);  0.3*sin(tsym); 0.1*sin(3*tsym);0;0;0 ];
-% x_func = [0;  0; 0.4*sin(3*tsym);0;0;0 ];
+% x_func = [0.3*cos(tsym);  0.3*sin(tsym); 0.1*sin(3*tsym);0;0;0 ];
+x_func = [0.1*cos(tsym); 0.1*sin(tsym); 0.3*sin(3*tsym);0.2*sin(2*tsym);0;0];
 % x_func = [cos(tsym)-1 ; 0;tsym*0.2  ; 0;0;0];
 %x_func = [tsym*0.2 ; 0;0  ; 0;0;0];
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ;-sin(tsym)*0.2;0 ;0];
