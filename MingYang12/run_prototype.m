@@ -10,7 +10,7 @@ close all;
 clear;
 addpath('../Simulation/plotutils');
 addpath('../utils');
-datafile = '../dataset/data_sim_05_line_rot.mat';
+datafile = '../dataset/data_sim_05_line_rot2.mat';
 load(datafile);
 
 checkerBoardPoints = points;
@@ -82,12 +82,13 @@ firstEkfState.bg = [0;0;0];
 firstEkfState.ba = [0;0;0];
 
 % calib
-attitude = [3.0/180,4.0/180,-1/180]*3.14;
+attitude = [5.0/180,6.0/180,-4/180]*3.14;
 init_q_C_I = rotMatToQuat(PQR2rotmat(attitude));
 firstEkfState.q_C_I = init_q_C_I;
 [r1,r2,r3] = quat2angle(init_q_C_I([4,1:3])','XYZ');
 % [r1,r2,r3]*180/3.14
-firstEkfState.p_I_C = [-0.1;0.06;-0.04];
+init_p_I_C = [-0.1;0.16;-0.04];
+firstEkfState.p_I_C = init_p_I_C;
 
 
 % covariance
@@ -101,6 +102,7 @@ pHat = ground_truth(imageStart,2:4)';
 onlyImuPro = ground_truth(imageStart,2:4)';
 p_I_CHat = [firstEkfState.p_I_C];
 rotHat = [r1,r2,r3]';
+covarHat = sqrt(diag(initialCovar));
 
 %% ==========================Loop ==============================%%
 
@@ -132,6 +134,7 @@ for state_i = imageStart+1 : imageEnd
             [r1,r2,r3] = quat2angle(q_C_IHat([4,1:3])','XYZ');
             rotHat = [rotHat [r1,r2,r3]'];
             
+            covarHat = [covarHat sqrt(diag(ekfState.Covar))];
             onlyImuPro = [onlyImuPro purePropagateState.p_I_G];
   
         end
