@@ -6,14 +6,15 @@ clear;
 addpath('./plotutils');
 
 %% ===== option == %%
-fileName = 'data_sim_04_noise_circle.mat';
+fileName = 'data_sim_05_line_rot3.mat';
 %trajectory time in seconds
-tf = 2*pi;
+tf = 4*pi;
 syms tsym;
 % x = [ 1 y z roll pitch yaw]
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ; sin(tsym)*0.2 ; -tsym ; -sin(tsym)*0.2];
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ; sin(tsym)*0.2 ; -sin(tsym)*0.1 ;cos(tsym)*0.2 ];
-x_func = [0.3*cos(tsym);  0.3*sin(tsym); 0.1*sin(3*tsym);0;0;0 ];
+% x_func = [0.3*cos(tsym);  0.3*sin(tsym); 0.1*sin(3*tsym);0;0;0 ];
+x_func = [0.1*cos(2*tsym); 0.1*sin(2*tsym); 0.3*sin(3*tsym);0.2*sin(2*tsym);0;0.2*sin(2*tsym)];
 % x_func = [cos(tsym)-1 ; 0;tsym*0.2  ; 0;0;0];
 %x_func = [tsym*0.2 ; 0;0  ; 0;0;0];
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ;-sin(tsym)*0.2;0 ;0];
@@ -97,13 +98,13 @@ a(3,:) = a(3,:) - x_ig(3);
 
 % Noise for a ba g bg
 num = length(t);
-b_a0 = 0.01*a(:,1);
+b_a0 = 0.0*a(:,1);
 b_a = repmat(b_a0,[1,num]);
 n_ba = sigma_wac*randn(3,num);
 b_a = b_a + n_ba;
 n_a = sigma_ac*randn(3,num);
 
-b_g0 = 0.01*w(:,1);
+b_g0 = 0.0*w(:,1);
 b_g = repmat(b_g0,[1,num]);
 n_bg = sigma_wgc*randn(3,num);
 b_g = b_g + n_bg;
