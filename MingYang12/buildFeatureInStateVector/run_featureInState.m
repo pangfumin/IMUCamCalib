@@ -8,9 +8,9 @@
 clc;
 close all;
 clear;
-addpath('../Simulation/plotutils');
-addpath('../utils');
-datafile = '../dataset/data_sim_05_line_rot3.mat';
+addpath('../../Simulation/plotutils');
+addpath('../../utils');
+datafile = '../../dataset/data_sim_04_noise_circle.mat';
 load(datafile);
 
 checkerBoardPoints = points;
@@ -44,13 +44,24 @@ imuStart = 1;
 %Set up the noise parameters
 noiseParams.u_var_prime = noise.sigma_im*noise.sigma_im;
 noiseParams.v_var_prime = noise.sigma_im*noise.sigma_im;
-noiseParams.sigma_gc = noise.sigma_gc ;               % rot vel var  
+noiseParams.sigma_gc = noise.sigma_gc;               % rot vel var  
 noiseParams.sigma_ac = noise.sigma_ac;               % lin accel var  
 noiseParams.sigma_wgc = noise.sigma_wgc;            % gyro bias change var 
 noiseParams.sigma_wac = noise.sigma_wac;            % accel bias change var
+noiseParams.u_var_prime = 0.004;
+noiseParams.v_var_prime = 0.004;
+
+% state : [q  p v bg ba ]
+q_var_init = 1e-6 * ones(1,3);         % init rot var
+p_var_init = 1e-6 * ones(1,3);         % init pos var
+v_var_init = 1e-6 * ones(1,3);         % init velocity var
+bg_var_init = 1e-6 * ones(1,3);        % init gyro bias var
+ba_var_init = 1e-6 * ones(1,3);        % init accel bias var
+
+features_var_int = 1e-2 * ones(1,PointCloud.num*3);
 
 
-
+initialIMUCovar = diag([q_var_init, p_var_init  v_var_init,bg_var_init, ba_var_init]);
 
 
 figure(1);
@@ -70,32 +81,13 @@ firstEkfState.p_I_G = ground_truth(imageStart,2:4)';
 firstEkfState.v_I_G = ground_truth_vels(imageStart,2:4)';
 firstEkfState.bg = [0;0;0];
 firstEkfState.ba = [0;0;0];
-
-% calib
-attitude = [5.0/180,-4.0/180,-1/180]*3.14;
-init_q_C_I = rotMatToQuat(PQR2rotmat(attitude));
-firstEkfState.q_C_I = init_q_C_I;
-[r1,r2,r3] = quat2angle(init_q_C_I([4,1:3])','XYZ');
-% [r1,r2,r3]*180/3.14
-init_p_I_C = [-0.032;0.059;0.019];
-firstEkfState.p_I_C = init_p_I_C;
-
-% state : [q  p v bg ba ]
-q_var_init = 1e-6 * ones(1,3);         % init rot var
-p_var_init = 1e-6 * ones(1,3);         % init pos var
-v_var_init = 1e-6 * ones(1,3);         % init velocity var
-bg_var_init = 1e-5 * ones(1,3);        % init gyro bias var
-ba_var_init = 1e-5 * ones(1,3);        % init accel bias var
-qCI_var_init = 0.6*1e-2 * [0.5 0.9 0.82]; 
-pIC_var_init = 1e-2 * [0.9 0.6 0.41]; 
-
-
-initialCovar = diag([q_var_init, p_var_init  v_var_init,bg_var_init, ba_var_init,qCI_var_init,pIC_var_init]);
-
-
+initialFeature = reshape(checkerBoardPoints,[PointCloud.num*3 1]) + 0.1*randn(75,1);
+firstEkfState.featureState = initialFeature;
 
 % covariance
-firstEkfState.Covar = initialCovar;
+firstEkfState.imuCovar = initialIMUCovar;
+firstEkfState.imuFeatureCovar = zeros(15,75);
+firstEkfState.featureCovar = diag(features_var_int);
 
 ekfState = firstEkfState;
 purePropagateState = firstEkfState;
@@ -103,12 +95,6 @@ purePropagateState = firstEkfState;
 
 pHat = ground_truth(imageStart,2:4)';
 onlyImuPro = ground_truth(imageStart,2:4)';
-p_I_CHat = [firstEkfState.p_I_C];
-
-sigma = [sqrt(initialCovar(16,16)),sqrt(initialCovar(17,17)),sqrt(initialCovar(18,18)),sqrt(initialCovar(19,19)),sqrt(initialCovar(20,20)),sqrt(initialCovar(21,21))];
-rotHat = [r1,r2,r3]';
-full_cov = (diag(initialCovar)');
-
 %% ==========================Loop ==============================%%
 
 
@@ -134,17 +120,7 @@ for state_i = imageStart+1 : imageEnd
 %             % For visualize
 %             
             pHat = [ pHat ekfState.p_I_G];
-            p_I_CHat = [p_I_CHat ekfState.p_I_C];
-            q_C_IHat = ekfState.q_C_I;
-            [r1,r2,r3] = quat2angle(q_C_IHat([4,1:3])','XYZ');
-            rotHat = [rotHat [r1,r2,r3]'];
-            
-            full_cov = [full_cov;
-                diag(ekfState.Covar)'];
             onlyImuPro = [onlyImuPro purePropagateState.p_I_G];
-            
-            sigma = [sigma;
-                sqrt(ekfState.Covar(16,16)),sqrt(ekfState.Covar(17,17)),sqrt(ekfState.Covar(18,18)),sqrt(ekfState.Covar(19,19)),sqrt(ekfState.Covar(20,20)),sqrt(ekfState.Covar(21,21))];
   
         end
   
@@ -165,14 +141,12 @@ for state_i = imageStart+1 : imageEnd
     p_I_G = ekfState.p_I_G;
 
     R_I_G = quatToRotMat(q_I_G);
-    R_C_I = quatToRotMat(ekfState.q_C_I);
-    q_C_G = rotMatToQuat(R_C_I*R_I_G);
+    q_C_G = rotMatToQuat(camera.R_C_I*R_I_G);
     q_C_G = q_C_G/norm(q_C_G);
-    Ip_C = - R_C_I'*ekfState.p_I_C;
-    p_C_G = p_I_G + R_I_G'*Ip_C;
+    p_C_G = p_I_G + R_I_G'*camera.Ip_C;
    
 
-    [observedPoints,validIndex] = projectPoints(q_C_G,p_C_G,checkerBoardPoints,PointCloud,Cam,noise.sigma_im);
+    [observedPoints,validIndex] = projectPoints(q_C_G,p_C_G,ekfState,PointCloud,Cam,noise.sigma_im);
     Cam_zHat_i = NaN*ones(2,PointCloud.num);
     Cam_zHat_i(:,validIndex) = observedPoints;
     % Plot features
@@ -186,9 +160,10 @@ for state_i = imageStart+1 : imageEnd
     
     
     r = calcResidual(Cam_z_i,Cam_zHat_i,validIndex,camera);
-    H = calH(ekfState,validIndex,checkerBoardPoints,camera);
+    H = calH(ekfState,validIndex,PointCloud,camera);
     R = diag(repmat([noiseParams.u_var_prime, noiseParams.v_var_prime], [1, numel(r)/2]));
-    P = ekfState.Covar;
+    P = [ekfState.imuCovar ekfState.imuFeatureCovar;
+        ekfState.imuFeatureCovar' ekfState.featureCovar];
 %     
     K = (P*H')/( H*P*H' + R);
     % State correction
@@ -196,13 +171,38 @@ for state_i = imageStart+1 : imageEnd
 %     
     ekfState = updateState(ekfState, deltaX); 
      % Covariance correction
-    tempMat = (eye(21) - K*H);
+    tempMat = (eye(15 + PointCloud.num*3) - K*H);
     P_corrected = tempMat * P * tempMat' + K * R * K';
-    ekfState.Covar = P_corrected;
+    ekfState.imuCovar = P_corrected(1:15,1:15);
+    ekfState.imuFeatureCovar = P_corrected(1:15,16:end);
+    ekfState.featureCovar = P_corrected(16:end,16:end);
+    
+    figure(1);
+    subplot(1,2,1);
+    estimatedPoints = reshape(ekfState.featureState,[3,PointCloud.num]);
+    plot_checherboard(estimatedPoints');
+
 
 end
 
 
 %% ================ PLOT =============================%%
-plot_result;
+
+p0 = ground_truth(1,2:4);
+figure(2);
+plot3(p0(1),p0(2),p0(3),'*');
+hold on;
+plot3(ground_truth(:,2),ground_truth(:,3),ground_truth(:,4),'r');
+hold on;
+plot3(pHat(1,:),pHat(2,:),pHat(3,:),'g');
+hold on;
+plot3(onlyImuPro(1,:),onlyImuPro(2,:),onlyImuPro(3,:),'b');
+
+legend('Start','Truth','Est.','Pure IMU');
+
+
+
+
+
+
 

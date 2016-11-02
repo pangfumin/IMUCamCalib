@@ -6,9 +6,9 @@ clear;
 addpath('./plotutils');
 
 %% ===== option == %%
-fileName = 'data_sim_05_line_rot2.mat';
+fileName = 'data_sim_05_line_rot3.mat';
 %trajectory time in seconds
-tf = 2*pi;
+tf = 4*pi;
 syms tsym;
 % x = [ 1 y z roll pitch yaw]
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ; sin(tsym)*0.2 ; -tsym ; -sin(tsym)*0.2];
