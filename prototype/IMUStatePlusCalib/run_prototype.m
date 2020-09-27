@@ -10,7 +10,7 @@ close all;
 clear;
 addpath('../Simulation/plotutils');
 addpath('../utils');
-datafile = '../dataset/data_sim_05_line_rot3.mat';
+datafile = '../../dataset/data_sim_05_circle_rot4.mat';
 load(datafile);
 
 checkerBoardPoints = points;

@@ -10,7 +10,7 @@ close all;
 clear;
 addpath('../../Simulation/plotutils');
 addpath('../../utils');
-datafile = '../../dataset/data_sim_04_noise_circle.mat';
+datafile = '../../dataset/data_sim_05_circle_rot4.mat';
 load(datafile);
 
 checkerBoardPoints = points;
@@ -184,6 +184,7 @@ hold on;
 plot3(onlyImuPro(1,:),onlyImuPro(2,:),onlyImuPro(3,:),'b');
 
 legend('Start','Truth','Est.','Pure IMU');
+axis equal;
 
 
 

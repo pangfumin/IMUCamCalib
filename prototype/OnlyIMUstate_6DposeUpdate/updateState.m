@@ -11,7 +11,7 @@ function ekfState_up = updateState(ekfState, deltaX)
   
     % q
     deltaq_I_G = buildUpdateQuat(deltatheta_I_G);
-    ekfState_up.q_I_G = quatLeftComp(deltaq_I_G) * ekfState.q_I_G;
+    ekfState_up.q_I_G = quatMult(ekfState.q_I_G, deltaq_I_G);
     ekfState_up.q_I_G = ekfState_up.q_I_G/norm(ekfState_up.q_I_G);
     
     % p

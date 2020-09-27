@@ -6,7 +6,7 @@ clear;
 addpath('./plotutils');
 
 %% ===== option == %%
-fileName = 'data_sim_05_line_rot3.mat';
+fileName = 'data_sim_05_circle_rot4.mat';
 %trajectory time in seconds
 tf = 4*pi;
 syms tsym;
@@ -14,7 +14,7 @@ syms tsym;
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ; sin(tsym)*0.2 ; -tsym ; -sin(tsym)*0.2];
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ; sin(tsym)*0.2 ; -sin(tsym)*0.1 ;cos(tsym)*0.2 ];
 % x_func = [0.3*cos(tsym);  0.3*sin(tsym); 0.1*sin(3*tsym);0;0;0 ];
-x_func = [0.1*cos(2*tsym); 0.1*sin(2*tsym); 0.3*sin(3*tsym);0.2*sin(2*tsym);0;0.2*sin(2*tsym)];
+x_func = [0.1*cos(10*tsym); 0.1*sin(20*tsym); 0.1*sin(30*tsym);0.30*sin(2*tsym);0.30*sin(10*tsym);1.42*sin(2*tsym)];
 % x_func = [cos(tsym)-1 ; 0;tsym*0.2  ; 0;0;0];
 %x_func = [tsym*0.2 ; 0;0  ; 0;0;0];
 %x_func = [cos(tsym)-1 ; sin(tsym); tsym*0.2  ;-sin(tsym)*0.2;0 ;0];
@@ -31,10 +31,10 @@ Cam.cy = 240;
 % standard deviation
 sigma_im = 11;               % pixel coord sigma , give it a small value ( not 0)
 noise.sigma_im = sigma_im/Cam.fx;
-sigma_gc  = 0.001 ;             % rot vel var  
-sigma_ac  = 0.008 ;              % lin accel var  
-sigma_wgc = 0.0001 ;            % gyro bias change var 
-sigma_wac = 0.0001;           % accel bias change var
+sigma_gc  = 0.01 ;             % rot vel var  
+sigma_ac  = 0.08 ;              % lin accel var  
+sigma_wgc = 0.001 ;            % gyro bias change var 
+sigma_wac = 0.001;           % accel bias change var
 noise.sigma_gc = sigma_gc;
 noise.sigma_ac = sigma_ac;
 noise.sigma_wgc = sigma_wgc;
@@ -98,13 +98,13 @@ a(3,:) = a(3,:) - x_ig(3);
 
 % Noise for a ba g bg
 num = length(t);
-b_a0 = 0.0*a(:,1);
+b_a0 = 0.001*a(:,1);
 b_a = repmat(b_a0,[1,num]);
 n_ba = sigma_wac*randn(3,num);
 b_a = b_a + n_ba;
 n_a = sigma_ac*randn(3,num);
 
-b_g0 = 0.0*w(:,1);
+b_g0 = 0.001*w(:,1);
 b_g = repmat(b_g0,[1,num]);
 n_bg = sigma_wgc*randn(3,num);
 b_g = b_g + n_bg;
@@ -233,7 +233,7 @@ ground_truth_vels = [t' v'];
 
 
 
-save(['../dataset/' fileName],'R_C_B','Bp_c0', 'imu_output','ground_truth','ground_truth_vels','points','Cam_t','Cam_z','Cam_pose','Cam','noise');
+save(['../dataset/' fileName],'R_C_B','Bp_c0', 'imu_output','ground_truth','ground_truth_vels','b_g', 'b_a','points','Cam_t','Cam_z','Cam_pose','Cam','noise');
 
 
 
